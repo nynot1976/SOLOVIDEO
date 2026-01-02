@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <!-- Permitir conexiones HTTP para servidores Jellyfin/Emby -->
+        <domain includeSubdomains="true">localhost</domain>
+        <domain includeSubdomains="true">127.0.0.1</domain>
+        <domain includeSubdomains="true">192.168.0.0/16</domain>
+        <domain includeSubdomains="true">10.0.0.0/8</domain>
+        <domain includeSubdomains="true">172.16.0.0/12</domain>
+        
+        <!-- Servidores específicos de SoloVideoClub -->
+        <domain includeSubdomains="true">restwo.stream-cloud.es</domain>
+        <domain includeSubdomains="true">tujellyfin1.ddns.net</domain>
+        <domain includeSubdomains="true">tuemby7.ddns.net</domain>
+        <domain includeSubdomains="true">ddns.net</domain>
+        <domain includeSubdomains="true">stream-cloud.es</domain>
+        
+        <!-- Dominios DynDNS comunes -->
+        <domain includeSubdomains="true">duckdns.org</domain>
+        <domain includeSubdomains="true">no-ip.org</domain>
+        <domain includeSubdomains="true">freedns.afraid.org</domain>
+        
+        <!-- Proxies CORS -->
+        <domain includeSubdomains="true">cors-anywhere.herokuapp.com</domain>
+        <domain includeSubdomains="true">allorigins.hexlet.app</domain>
+        <domain includeSubdomains="true">corsproxy.io</domain>
+        <domain includeSubdomains="true">api.codetabs.com</domain>
+    </domain-config>
+    
+    <!-- Configuración base para HTTPS -->
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system"/>
+        </trust-anchors>
+    </base-config>
+</network-security-config>

@@ -1,0 +1,552 @@
+Aquí tienes un componente VideoPlayerModal.tsx completo, actualizado con todas las mejoras:
+
+✅ VideoPlayerModal.tsx (versión final recomendada)
+tsx
+Copiar
+Editar
+import { useEffect, useRef } from "react";
+
+type VideoPlayerModalProps = {
+  isOpen: boolean;
+  onClose: () => void;
+  streamUrl: string;
+  title: string;
+};
+
+export function VideoPlayerModal({ isOpen, onClose, streamUrl, title }: VideoPlayerModalProps) {
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  // Recarga el video cuando cambia la URL
+  useEffect(() => {
+    if (isOpen && streamUrl && videoRef.current) {
+      console.log("Cargando stream:", streamUrl);
+      videoRef.current.load();
+    }
+  }, [streamUrl, isOpen]);
+
+  // Cierra el modal con la tecla Escape
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      window.addEventListener("keydown", handleKeyDown);
+    }
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center"
+      onClick={onClose} // Cerrar al hacer clic fuera
+    >
+      <div
+        className="bg-gray-900 p-4 rounded-xl w-full max-w-3xl shadow-lg"
+        onClick={(e) => e.stopPropagation()} // Evita que los clics internos cierren el modal
+      >
+        <h2 className="text-white text-xl mb-4">{title}</h2>
+        <video
+          ref={videoRef}
+          controls
+          autoPlay
+          className="w-full rounded-lg"
+        >
+          <source src={streamUrl} type="video/mp4" />
+          Tu navegador no soporta la reproducción de video.
+        </video>
+        <button
+          onClick={onClose}
+          className="mt-4 text-white px-4 py-2 bg-red-600 hover:bg-red-700 rounded"
+        >
+          Cerrar
+        </button>
+      </div>
+    </div>
+  );
+}
+✔️ Características incluidas:
+✅ Se recarga el video correctamente al cambiar la URL (.load()).
+
+✅ Se cierra al presionar Escape.
+
+✅ Se cierra al hacer clic fuera del modal.
+
+✅ Evita que clics dentro del reproductor cierren el modal.
+
+✅ Estilo limpio, con soporte para Tailwind.
+
+¿Quieres que te ayude a agregar soporte para pantalla completa, avance rápido, o controles personalizados?
+
+
+
+
+
+
+
+
+Tú dijiste:
+si
+
+
+ChatGPT Plus
+¡Perfecto! Vamos a mejorar tu reproductor con:
+
+✅ Controles personalizados:
+Reproducir / Pausar
+
+Barra de progreso
+
+Tiempo transcurrido / total
+
+Volumen
+
+Pantalla completa
+
+🧩 Reemplazo completo: VideoPlayerModal.tsx con controles personalizados
+tsx
+Copiar
+Editar
+import { useEffect, useRef, useState } from "react";
+
+type VideoPlayerModalProps = {
+  isOpen: boolean;
+  onClose: () => void;
+  streamUrl: string;
+  title: string;
+};
+
+export function VideoPlayerModal({ isOpen, onClose, streamUrl, title }: VideoPlayerModalProps) {
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [volume, setVolume] = useState(1);
+
+  // Cargar video cuando cambia la URL
+  useEffect(() => {
+    if (isOpen && streamUrl && videoRef.current) {
+      videoRef.current.load();
+    }
+  }, [streamUrl, isOpen]);
+
+  // Cerrar con Escape
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+
+    if (isOpen) window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
+
+  // Actualizar estado del video
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const updateTime = () => setCurrentTime(video.currentTime);
+    const updateDuration = () => setDuration(video.duration);
+    const handleEnded = () => setIsPlaying(false);
+
+    video.addEventListener("timeupdate", updateTime);
+    video.addEventListener("loadedmetadata", updateDuration);
+    video.addEventListener("ended", handleEnded);
+
+    return () => {
+      video.removeEventListener("timeupdate", updateTime);
+      video.removeEventListener("loadedmetadata", updateDuration);
+      video.removeEventListener("ended", handleEnded);
+    };
+  }, [streamUrl]);
+
+  // Controles
+  const togglePlay = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    if (video.paused) {
+      video.play();
+      setIsPlaying(true);
+    } else {
+      video.pause();
+      setIsPlaying(false);
+    }
+  };
+
+  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const video = videoRef.current;
+    if (!video) return;
+    const newTime = parseFloat(e.target.value);
+    video.currentTime = newTime;
+    setCurrentTime(newTime);
+  };
+
+  const handleVolume = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const video = videoRef.current;
+    if (!video) return;
+    const vol = parseFloat(e.target.value);
+    video.volume = vol;
+    setVolume(vol);
+  };
+
+  const toggleFullscreen = () => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    if (document.fullscreenElement) {
+      document.exitFullscreen();
+    } else {
+      container.requestFullscreen();
+    }
+  };
+
+  const formatTime = (time: number) => {
+    const min = Math.floor(time / 60);
+    const sec = Math.floor(time % 60);
+    return `${min}:${sec < 10 ? "0" : ""}${sec}`;
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center"
+      onClick={onClose}
+    >
+      <div
+        className="bg-gray-900 p-4 rounded-xl w-full max-w-4xl shadow-lg"
+        onClick={(e) => e.stopPropagation()}
+        ref={containerRef}
+      >
+        <h2 className="text-white text-xl mb-2">{title}</h2>
+
+        <video
+          ref={videoRef}
+          className="w-full rounded mb-4"
+          autoPlay
+          onClick={togglePlay}
+        >
+          <source src={streamUrl} type="video/mp4" />
+          Tu navegador no soporta video.
+        </video>
+
+        {/* Controles personalizados */}
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={togglePlay}
+              className="text-white bg-blue-600 hover:bg-blue-700 px-4 py-1 rounded"
+            >
+              {isPlaying ? "⏸ Pausa" : "▶️ Reproducir"}
+            </button>
+            <span className="text-gray-300 text-sm">
+              {formatTime(currentTime)} / {formatTime(duration)}
+            </span>
+            <input
+              type="range"
+              min={0}
+              max={duration || 0}
+              step="0.1"
+              value={currentTime}
+              onChange={handleSeek}
+              className="flex-1"
+            />
+          </div>
+
+          <div className="flex items-center gap-4">
+            <label className="text-white text-sm">Volumen</label>
+            <input
+              type="range"
+              min={0}
+              max={1}
+              step={0.01}
+              value={volume}
+              onChange={handleVolume}
+              className="w-32"
+            />
+            <button
+              onClick={toggleFullscreen}
+              className="text-white bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded"
+            >
+              Pantalla completa
+            </button>
+            <button
+              onClick={onClose}
+              className="ml-auto text-white bg-red-600 hover:bg-red-700 px-3 py-1 rounded"
+            >
+              Cerrar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+✅ ¿Qué incluye este reproductor?
+Controles personalizados con Tailwind
+
+Autoplay al abrir el modal
+
+Control de reproducción, volumen, barra de progreso
+
+Pantalla completa nativa
+
+Escape + clic fuera para cerrar
+
+¿Quieres que este reproductor también funcione con subtítulos (.vtt o .srt) o se adapte a streaming HLS (.m3u8)?
+
+
+
+
+
+
+
+
+Tú dijiste:
+si
+
+
+ChatGPT Plus
+¡Genial! Vamos a agregar soporte para:
+
+✅ Subtítulos (.vtt, .srt)
+y
+
+✅ Streaming HLS (.m3u8) usando hls.js
+🔧 Requisitos:
+Subtítulos WebVTT (.vtt): Ya son soportados nativamente.
+
+Archivos .srt: Deben convertirse a .vtt en backend o con una herramienta.
+
+HLS (.m3u8): Necesitamos usar hls.js en navegadores que no lo soporten nativamente.
+
+📦 Paso 1: Instalar hls.js
+En tu proyecto con React + Vite o Webpack:
+
+bash
+Copiar
+Editar
+npm install hls.js
+📁 Paso 2: Actualiza VideoPlayerModal.tsx para:
+Usar hls.js si el navegador no soporta HLS nativamente.
+
+Agregar <track> para subtítulos si están disponibles.
+
+✅ Código actualizado con soporte para HLS + Subtítulos
+tsx
+Copiar
+Editar
+import { useEffect, useRef, useState } from "react";
+import Hls from "hls.js";
+
+type VideoPlayerModalProps = {
+  isOpen: boolean;
+  onClose: () => void;
+  streamUrl: string;           // Puede ser .mp4 o .m3u8
+  title: string;
+  subtitleUrl?: string;        // .vtt (ideal) o convertido desde .srt
+};
+
+export function VideoPlayerModal({
+  isOpen,
+  onClose,
+  streamUrl,
+  title,
+  subtitleUrl
+}: VideoPlayerModalProps) {
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [volume, setVolume] = useState(1);
+
+  // HLS.js loader
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || !streamUrl || !isOpen) return;
+
+    const isHls = streamUrl.endsWith(".m3u8");
+
+    if (isHls && !video.canPlayType("application/vnd.apple.mpegurl")) {
+      const hls = new Hls();
+      hls.loadSource(streamUrl);
+      hls.attachMedia(video);
+      hls.on(Hls.Events.ERROR, (event, data) => {
+        console.error("HLS.js error:", data);
+      });
+
+      return () => hls.destroy();
+    } else {
+      video.src = streamUrl;
+    }
+  }, [streamUrl, isOpen]);
+
+  // Metadata & tiempo
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const updateTime = () => setCurrentTime(video.currentTime);
+    const updateDuration = () => setDuration(video.duration);
+    const handleEnded = () => setIsPlaying(false);
+
+    video.addEventListener("timeupdate", updateTime);
+    video.addEventListener("loadedmetadata", updateDuration);
+    video.addEventListener("ended", handleEnded);
+
+    return () => {
+      video.removeEventListener("timeupdate", updateTime);
+      video.removeEventListener("loadedmetadata", updateDuration);
+      video.removeEventListener("ended", handleEnded);
+    };
+  }, [streamUrl]);
+
+  const togglePlay = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    if (video.paused) {
+      video.play();
+      setIsPlaying(true);
+    } else {
+      video.pause();
+      setIsPlaying(false);
+    }
+  };
+
+  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const video = videoRef.current;
+    if (!video) return;
+    const newTime = parseFloat(e.target.value);
+    video.currentTime = newTime;
+    setCurrentTime(newTime);
+  };
+
+  const handleVolume = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const video = videoRef.current;
+    if (!video) return;
+    const vol = parseFloat(e.target.value);
+    video.volume = vol;
+    setVolume(vol);
+  };
+
+  const toggleFullscreen = () => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    if (document.fullscreenElement) {
+      document.exitFullscreen();
+    } else {
+      container.requestFullscreen();
+    }
+  };
+
+  const formatTime = (time: number) => {
+    const min = Math.floor(time / 60);
+    const sec = Math.floor(time % 60);
+    return `${min}:${sec < 10 ? "0" : ""}${sec}`;
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center"
+      onClick={onClose}
+    >
+      <div
+        className="bg-gray-900 p-4 rounded-xl w-full max-w-4xl shadow-lg"
+        onClick={(e) => e.stopPropagation()}
+        ref={containerRef}
+      >
+        <h2 className="text-white text-xl mb-2">{title}</h2>
+
+        <video
+          ref={videoRef}
+          className="w-full rounded mb-4"
+          controls
+          autoPlay
+        >
+          {/* Subtítulos */}
+          {subtitleUrl && (
+            <track
+              src={subtitleUrl}
+              kind="subtitles"
+              srcLang="es"
+              label="Español"
+              default
+            />
+          )}
+        </video>
+
+        {/* Controles personalizados */}
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={togglePlay}
+              className="text-white bg-blue-600 hover:bg-blue-700 px-4 py-1 rounded"
+            >
+              {isPlaying ? "⏸ Pausa" : "▶️ Reproducir"}
+            </button>
+            <span className="text-gray-300 text-sm">
+              {formatTime(currentTime)} / {formatTime(duration)}
+            </span>
+            <input
+              type="range"
+              min={0}
+              max={duration || 0}
+              step="0.1"
+              value={currentTime}
+              onChange={handleSeek}
+              className="flex-1"
+            />
+          </div>
+
+          <div className="flex items-center gap-4">
+            <label className="text-white text-sm">Volumen</label>
+            <input
+              type="range"
+              min={0}
+              max={1}
+              step={0.01}
+              value={volume}
+              onChange={handleVolume}
+              className="w-32"
+            />
+            <button
+              onClick={toggleFullscreen}
+              className="text-white bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded"
+            >
+              Pantalla completa
+            </button>
+            <button
+              onClick={onClose}
+              className="ml-auto text-white bg-red-600 hover:bg-red-700 px-3 py-1 rounded"
+            >
+              Cerrar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+✅ Qué admite ahora este reproductor:
+Funcionalidad	Estado
+.mp4	✅ Soportado nativamente
+.m3u8 (HLS)	✅ Usando hls.js
+.vtt subtítulos	✅ Reproducción integrada
+.srt subtítulos	⚠️ Convierte a .vtt primero
+Controles	✅ Personalizados
+Pantalla completa	✅ Soportado
+Escape / click	✅ Para cerrar

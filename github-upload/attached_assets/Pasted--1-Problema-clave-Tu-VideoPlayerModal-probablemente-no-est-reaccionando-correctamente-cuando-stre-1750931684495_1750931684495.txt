@@ -1,0 +1,68 @@
+✅ 1. Problema clave
+Tu VideoPlayerModal probablemente no está reaccionando correctamente cuando streamUrl cambia dinámicamente (que es el caso tras el fetch). El <video> puede requerir una llamada a .load() para reiniciar la carga del nuevo src.
+
+🛠️ 2. Solución sugerida para VideoPlayerModal
+Modifica tu componente video-player-modal.tsx para que reaccione al cambio en streamUrl con un useEffect que llame a .load():
+
+tsx
+Copiar
+Editar
+import { useEffect, useRef } from "react";
+
+type VideoPlayerModalProps = {
+  isOpen: boolean;
+  onClose: () => void;
+  streamUrl: string;
+  title: string;
+};
+
+export function VideoPlayerModal({ isOpen, onClose, streamUrl, title }: VideoPlayerModalProps) {
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  // Recargar el video cuando cambia la URL
+  useEffect(() => {
+    if (isOpen && streamUrl && videoRef.current) {
+      videoRef.current.load();
+    }
+  }, [streamUrl, isOpen]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black bg-opacity-80 flex items-center justify-center">
+      <div className="bg-gray-900 p-4 rounded-xl w-full max-w-3xl">
+        <h2 className="text-white text-xl mb-4">{title}</h2>
+        <video
+          ref={videoRef}
+          controls
+          autoPlay
+          className="w-full rounded-lg"
+        >
+          <source src={streamUrl} type="video/mp4" />
+          Tu navegador no soporta la reproducción de video.
+        </video>
+        <button onClick={onClose} className="mt-4 text-white">Cerrar</button>
+      </div>
+    </div>
+  );
+}
+✅ 3. ¿Por qué este cambio es importante?
+Cuando cambias el streamUrl dinámicamente después de que el modal ya se ha renderizado una vez, el navegador no siempre recarga el <video> automáticamente. Con .load(), le decimos explícitamente al navegador:
+
+"Hey, ha cambiado la URL del video, vuelve a cargarlo".
+
+✅ 4. Adicional: Validación defensiva
+En el botón "Reproducir", asegúrate que data.streamUrl es válido y es una URL reproducible antes de intentar abrir el modal.
+
+✅ 5. Tip de depuración
+Si con esto sigue sin cargar el video, añade temporalmente un log dentro del efecto para confirmar que se ejecuta:
+
+tsx
+Copiar
+Editar
+useEffect(() => {
+  if (isOpen && streamUrl && videoRef.current) {
+    console.log("Cargando nuevo stream:", streamUrl);
+    videoRef.current.load();
+  }
+}, [streamUrl, isOpen]);

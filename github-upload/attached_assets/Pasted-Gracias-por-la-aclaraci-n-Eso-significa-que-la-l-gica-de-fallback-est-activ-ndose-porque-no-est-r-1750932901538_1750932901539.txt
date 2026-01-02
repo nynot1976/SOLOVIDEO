@@ -1,0 +1,81 @@
+Gracias por la aclaración. Eso significa que la lógica de fallback está activándose porque no está recibiendo una URL válida para reproducir dentro del modal, y por eso intenta abrir una nueva pestaña con la URL de reproducción externa, que además no funciona.
+
+Vamos a revisar paso a paso y asegurarnos de:
+
+Que la API /api/media/{embyId}/stream devuelve correctamente un streamUrl válido.
+
+Que cuando el streamUrl llega bien, el modal de video se abre y el video se reproduce.
+
+Que si no llega el streamUrl, no se muestre el mensaje de abrir en nueva pestaña (o al menos avisar mejor).
+
+Qué hacer:
+Paso 1: Añadir logs para verificar la respuesta
+Modifica el botón “Reproducir” para que imprima el resultado recibido:
+
+tsx
+Copiar
+Editar
+const response = await fetch(`/api/media/${selectedItem.embyId}/stream`);
+const data = await response.json();
+console.log('Stream API response:', data);
+Así confirmamos qué está llegando.
+
+Paso 2: Asegurarte que streamUrl está en el JSON y no es vacío
+El condicional debería ser:
+
+tsx
+Copiar
+Editar
+if (data?.streamUrl && data.streamUrl.trim() !== '') {
+  // Abrir modal con streamUrl
+} else {
+  // Fallback
+}
+Paso 3: Asegurarte de que VideoPlayerModal recibe props correctos y monta el video
+Para eso, ¿me puedes compartir tu código de VideoPlayerModal? Así verifico que la prop streamUrl se esté usando correctamente para el elemento <video>.
+
+Mientras, aquí una versión mejorada del handler de reproducción con logs y mensajes de alerta para probar:
+tsx
+Copiar
+Editar
+<Button
+  onClick={async () => {
+    if (selectedItem.type === 'Studio' || selectedItem.type === 'Person' || selectedItem.type === 'Genre') {
+      alert('Este contenido no es reproducible');
+      setIsDetailsOpen(false);
+      return;
+    }
+    try {
+      const response = await fetch(`/api/media/${selectedItem.embyId}/stream`);
+      const data = await response.json();
+      console.log('Stream API response:', data);
+      if (data?.streamUrl && data.streamUrl.trim() !== '') {
+        setPlayingItem(selectedItem);
+        setStreamUrl(data.streamUrl);
+        setIsPlayerOpen(true);
+      } else {
+        alert('No se recibió URL de stream válida. Intentando abrir en nueva pestaña...');
+        const playUrl = `/api/media/${selectedItem.embyId}/play`;
+        window.open(playUrl, '_blank');
+      }
+    } catch (error) {
+      alert('Error al obtener stream. Intentando abrir en nueva pestaña...');
+      console.error(error);
+      const playUrl = `/api/media/${selectedItem.embyId}/play`;
+      window.open(playUrl, '_blank');
+    }
+    setIsDetailsOpen(false);
+  }}
+  className="flex-1"
+  disabled={selectedItem?.type === 'Studio' || selectedItem?.type === 'Person' || selectedItem?.type === 'Genre'}
+>
+  {selectedItem?.type === 'Studio' || selectedItem?.type === 'Person' || selectedItem?.type === 'Genre'
+    ? 'No reproducible'
+    : 'Reproducir'}
+</Button>
+Resumen
+Primero verifica la respuesta de la API.
+
+Luego asegúrate que el modal usa ese streamUrl para cargar el video.
+
+Si quieres, pásame el código de VideoPlayerModal y lo reviso.

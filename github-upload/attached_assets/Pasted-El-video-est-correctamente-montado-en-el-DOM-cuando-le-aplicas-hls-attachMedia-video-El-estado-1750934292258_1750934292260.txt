@@ -1,0 +1,81 @@
+El <video> está correctamente montado en el DOM cuando le aplicas hls.attachMedia(video).
+
+El estado isOpen del modal realmente hace que se muestre el modal en la interfaz.
+
+El streamUrl es válido y accesible desde el navegador (mismo dominio, o con CORS habilitado).
+
+No hay errores silenciosos en el render del componente modal.
+
+✅ Qué necesitas verificar o ajustar
+Basado en lo que me diste, este sería un ejemplo funcional de video-player-modal.tsx, que deberías comparar o adaptar al tuyo:
+
+tsx
+Copiar
+Editar
+import { useEffect, useRef } from "react";
+import Hls from "hls.js";
+import { Dialog } from "@headlessui/react";
+import { X } from "lucide-react";
+
+interface Props {
+  isOpen: boolean;
+  onClose: () => void;
+  streamUrl: string;
+  title: string;
+}
+
+export function VideoPlayerModal({ isOpen, onClose, streamUrl, title }: Props) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    if (!isOpen || !streamUrl || !videoRef.current) return;
+
+    const video = videoRef.current;
+    const isHls = streamUrl.endsWith(".m3u8");
+
+    if (isHls && Hls.isSupported()) {
+      const hls = new Hls();
+      hls.loadSource(streamUrl);
+      hls.attachMedia(video);
+      console.log("Using HLS.js for:", streamUrl);
+
+      return () => {
+        hls.destroy();
+      };
+    } else {
+      console.log("Using native video player for:", streamUrl);
+      video.src = streamUrl;
+      video.load();
+    }
+  }, [isOpen, streamUrl]);
+
+  if (!isOpen) return null;
+
+  return (
+    <Dialog open={isOpen} onClose={onClose} className="fixed inset-0 z-50">
+      <div className="fixed inset-0 bg-black/80" />
+      <div className="fixed inset-0 flex items-center justify-center p-4">
+        <div className="bg-gray-900 rounded-xl overflow-hidden max-w-4xl w-full">
+          <div className="flex justify-between items-center p-4 border-b border-gray-700">
+            <h2 className="text-white font-bold text-lg">{title}</h2>
+            <button onClick={onClose}>
+              <X className="text-white w-5 h-5" />
+            </button>
+          </div>
+          <video
+            ref={videoRef}
+            controls
+            autoPlay
+            className="w-full h-[70vh] bg-black"
+          />
+        </div>
+      </div>
+    </Dialog>
+  );
+}
+✅ Revisa también:
+Que isOpen esté realmente cambiando a true cuando haces clic en “Reproducir”.
+
+Que no tengas estilos display: none, opacity: 0 o z-index mal configurados que oculten el modal.
+
+Que streamUrl sea una URL real y accesible desde el navegador.

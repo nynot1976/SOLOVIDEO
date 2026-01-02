@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">SoloVideoClub</string>
+    <string name="title_activity_main">SoloVideoClub</string>
+    <string name="package_name">com.solovideo.club</string>
+    <string name="custom_url_scheme">solovideo</string>
+    
+    <!-- Mensajes de la aplicación -->
+    <string name="loading">Cargando...</string>
+    <string name="connecting">Conectando a servidor...</string>
+    <string name="error_connection">Error de conexión</string>
+    <string name="retry">Reintentar</string>
+    
+    <!-- Credenciales por defecto -->
+    <string name="default_server">http://tujellyfin5.ddns.net:8096</string>
+    <string name="default_user">556677@g.es</string>
+</resources>

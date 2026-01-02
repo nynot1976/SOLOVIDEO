@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Colores principales de SoloVideoClub -->
+    <color name="colorPrimary">#667eea</color>
+    <color name="colorPrimaryDark">#1a1a2e</color>
+    <color name="colorAccent">#667eea</color>
+    
+    <!-- Colores de fondo -->
+    <color name="background_dark">#1a1a2e</color>
+    <color name="background_light">#ffffff</color>
+    
+    <!-- Colores de barra de estado -->
+    <color name="status_bar_dark">#1a1a2e</color>
+    <color name="status_bar_light">#667eea</color>
+    
+    <!-- Colores de barra de navegación -->
+    <color name="navigation_bar_dark">#1a1a2e</color>
+    <color name="navigation_bar_light">#ffffff</color>
+    
+    <!-- Colores del splash screen -->
+    <color name="splash_background">#1a1a2e</color>
+    <color name="splash_spinner">#667eea</color>
+    
+    <!-- Colores adicionales -->
+    <color name="text_primary">#ffffff</color>
+    <color name="text_secondary">#cccccc</color>
+    <color name="overlay_dark">#80000000</color>
+</resources>

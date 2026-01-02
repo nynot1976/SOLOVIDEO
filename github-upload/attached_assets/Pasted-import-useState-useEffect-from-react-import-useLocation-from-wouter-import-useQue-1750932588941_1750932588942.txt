@@ -1,0 +1,193 @@
+import { useState, useEffect } from "react";
+import { useLocation } from "wouter";
+import { useQuery } from "@tanstack/react-query";
+import { embyClient } from "@/lib/emby-client";
+import { MediaGrid } from "@/components/clickable-media-grid";
+import { MediaGridSkeleton } from "@/components/loading-skeletons";
+import { VideoPlayerModal } from "@/components/video-player-modal";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft, Search } from "lucide-react";
+import { useLocation as useWouterLocation } from "wouter";
+import { Input } from "@/components/ui/input";
+
+export function LibrarySimple() {
+  const [location] = useLocation();
+  const [, navigate] = useWouterLocation();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedItem, setSelectedItem] = useState<any>(null);
+  const [playingItem, setPlayingItem] = useState<any>(null); // NUEVO
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [isPlayerOpen, setIsPlayerOpen] = useState(false);
+  const [streamUrl, setStreamUrl] = useState("");
+
+  const libraryId = location.split('/').pop();
+
+  const { data: connectionStatus } = useQuery({
+    queryKey: ["/api/connection/status"],
+    queryFn: () => embyClient.getConnectionStatus(),
+  });
+
+  const { data: libraries = [] } = useQuery({
+    queryKey: ["/api/libraries"],
+    queryFn: () => embyClient.getLibraries(),
+    enabled: !!connectionStatus?.connected,
+  });
+
+  const { data: libraryItems = [], isLoading } = useQuery({
+    queryKey: ["/api/libraries", libraryId, "items"],
+    queryFn: async () => {
+      if (!libraryId) return [];
+      const items = await embyClient.getLibraryItems(libraryId, 10000, 0);
+      return items;
+    },
+    enabled: !!libraryId && !!connectionStatus?.connected,
+  });
+
+  const currentLibrary = libraries.find(lib => lib.embyId === libraryId);
+
+  const filteredItems = searchTerm
+    ? libraryItems.filter(item =>
+        item.name.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    : libraryItems;
+
+  const handleItemClick = (item: any) => {
+    if (item.type === 'Studio' || item.type === 'Person' || item.type === 'Genre') {
+      console.log('Non-playable item clicked:', item.type, item.name);
+      return;
+    }
+    setSelectedItem(item);
+    setIsDetailsOpen(true);
+  };
+
+  if (!connectionStatus?.connected) {
+    return (
+      <div className="p-8 text-center">
+        <h2 className="text-2xl font-bold text-red-400 mb-4">Sin conexión</h2>
+        <p className="text-gray-400">No hay conexión activa al servidor Emby</p>
+        <Button onClick={() => navigate('/')} className="mt-4">
+          Volver al inicio
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-900">
+      {/* Header */}
+      <div className="bg-gray-800 border-b border-gray-700 p-4">
+        <div className="flex items-center gap-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/')}
+            className="text-gray-400 hover:text-white"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Atrás
+          </Button>
+          <div className="flex-1">
+            <h1 className="text-xl font-bold text-white">
+              {currentLibrary?.name || 'Biblioteca'}
+            </h1>
+            <p className="text-sm text-gray-400">
+              {filteredItems.length} elementos
+            </p>
+          </div>
+        </div>
+
+        {/* Search */}
+        <div className="mt-4 relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+          <Input
+            placeholder="Buscar contenido..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10 bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+          />
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="p-4">
+        {isLoading ? (
+          <MediaGridSkeleton count={12} />
+        ) : (
+          <MediaGrid
+            items={filteredItems}
+            onItemClick={handleItemClick}
+            title=""
+          />
+        )}
+      </div>
+
+      {/* Media Details Modal */}
+      {selectedItem && isDetailsOpen && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-900 rounded-xl p-6 max-w-md w-full">
+            <h3 className="text-xl font-bold text-white mb-4">
+              {selectedItem.name}
+            </h3>
+            <p className="text-gray-400 mb-6">
+              {selectedItem.overview || 'Sin descripción disponible'}
+            </p>
+            <div className="flex gap-3">
+              <Button
+                onClick={async () => {
+                  if (selectedItem.type === 'Studio' || selectedItem.type === 'Person' || selectedItem.type === 'Genre') {
+                    console.log('Cannot play non-media item:', selectedItem.type);
+                    setIsDetailsOpen(false);
+                    return;
+                  }
+                  try {
+                    const response = await fetch(`/api/media/${selectedItem.embyId}/stream`);
+                    const data = await response.json();
+                    if (data.streamUrl && data.streamUrl.trim() !== '') {
+                      console.log('Opening video player with:', data.streamUrl);
+                      setPlayingItem(selectedItem); // NUEVO
+                      setStreamUrl(data.streamUrl);
+                      setIsPlayerOpen(true);
+                    } else {
+                      console.error('Invalid stream URL received:', data);
+                      window.open(`/api/media/${selectedItem.embyId}/play`, '_blank');
+                    }
+                  } catch (error) {
+                    console.error('Error getting stream:', error);
+                    window.open(`/api/media/${selectedItem.embyId}/play`, '_blank');
+                  }
+                  setIsDetailsOpen(false);
+                }}
+                className="flex-1"
+                disabled={
+                  selectedItem?.type === 'Studio' ||
+                  selectedItem?.type === 'Person' ||
+                  selectedItem?.type === 'Genre'
+                }
+              >
+                {selectedItem?.type === 'Studio' || selectedItem?.type === 'Person' || selectedItem?.type === 'Genre'
+                  ? 'No reproducible'
+                  : 'Reproducir'}
+              </Button>
+              <Button variant="outline" onClick={() => setIsDetailsOpen(false)}>
+                Cerrar
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Video Player Modal */}
+      <VideoPlayerModal
+        isOpen={isPlayerOpen}
+        onClose={() => {
+          setIsPlayerOpen(false);
+          setStreamUrl("");
+          setIsDetailsOpen(false);
+          setPlayingItem(null); // NUEVO
+        }}
+        streamUrl={streamUrl}
+        title={playingItem?.name || "Video"}
+      />
+    </div>
+  );
+}

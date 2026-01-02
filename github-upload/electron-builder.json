@@ -1,0 +1,31 @@
+{
+  "appId": "com.solovideo.club",
+  "productName": "SoloVideoClub",
+  "directories": {
+    "output": "release-executable"
+  },
+  "files": [
+    "!node_modules/.cache",
+    "!*.log",
+    "!release-*/**/*",
+    "!dist/**/*",
+    "!.replit",
+    "!.git/**/*"
+  ],
+  "win": {
+    "target": [
+      {
+        "target": "portable",
+        "arch": [
+          "x64"
+        ]
+      }
+    ],
+    "artifactName": "SoloVideoClub-v${version}-Portable.${ext}"
+  },
+  "portable": {
+    "artifactName": "SoloVideoClub-Portable.exe"
+  },
+  "compression": "store",
+  "nodeGypRebuild": false
+}

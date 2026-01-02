@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Tema principal de SoloVideoClub -->
+    <style name="AppTheme" parent="Theme.AppCompat.DayNight.DarkActionBar">
+        <!-- Colores principales -->
+        <item name="colorPrimary">#667eea</item>
+        <item name="colorPrimaryDark">#1a1a2e</item>
+        <item name="colorAccent">#667eea</item>
+        
+        <!-- Configuración de ventana -->
+        <item name="android:windowBackground">@color/background_dark</item>
+        <item name="android:statusBarColor">@color/status_bar_dark</item>
+        <item name="android:navigationBarColor">@color/navigation_bar_dark</item>
+        
+        <!-- Optimizaciones para video -->
+        <item name="android:hardwareAccelerated">true</item>
+        <item name="android:largeHeap">true</item>
+    </style>
+
+    <!-- Tema para el splash screen -->
+    <style name="AppTheme.NoActionBarLaunch" parent="AppTheme">
+        <item name="android:windowActionBar">false</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowBackground">@drawable/splash</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowIsTranslucent">false</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+    </style>
+
+    <!-- Tema para pantalla completa (videos) -->
+    <style name="AppTheme.Fullscreen" parent="AppTheme">
+        <item name="android:windowActionBar">false</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+    </style>
+</resources>

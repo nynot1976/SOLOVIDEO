@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SoloVideoClub - Streaming Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+            color: white;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Login Styles */
+        .login-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .login-form {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            min-width: 400px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .login-form h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 16px;
+        }
+
+        .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* App Styles */
+        .app-container {
+            display: none;
+        }
+
+        .header {
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logout-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .search-container {
+            margin-bottom: 30px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 15px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            color: white;
+            font-size: 16px;
+        }
+
+        .search-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        /* Library Grid */
+        .libraries-section {
+            margin-bottom: 40px;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .libraries-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .library-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .library-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .library-card h3 {
+            font-size: 1.4rem;
+            margin-bottom: 8px;
+            color: #4ecdc4;
+        }
+
+        .library-card p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+        }
+
+        /* Media Grid */
+        .media-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .media-item {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .media-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .media-item h4 {
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+            color: #ff6b6b;
+        }
+
+        .media-item p {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+        }
+
+        .media-year {
+            color: #4ecdc4;
+            font-weight: 500;
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2rem;
+            color: #4ecdc4;
+        }
+
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid #4ecdc4;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Messages */
+        .message {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .message.success {
+            background: rgba(46, 204, 113, 0.2);
+            border: 1px solid #2ecc71;
+            color: #2ecc71;
+        }
+
+        .message.error {
+            background: rgba(231, 76, 60, 0.2);
+            border: 1px solid #e74c3c;
+            color: #e74c3c;
+        }
+
+        .message.info {
+            background: rgba(52, 152, 219, 0.2);
+            border: 1px solid #3498db;
+            color: #3498db;
+        }
+
+        /* Back Button */
+        .back-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Hidden */
+        .hidden {
+            display: none !important;
+        }
+
+        /* Connection Status */
+        .connection-status {
+            background: rgba(46, 204, 113, 0.2);
+            border: 1px solid #2ecc71;
+            color: #2ecc71;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .login-form {
+                min-width: 90%;
+                padding: 30px 20px;
+            }
+
+            .container {
+                padding: 15px;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .libraries-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .media-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Container -->
+    <div id="loginContainer" class="login-container">
+        <form id="loginForm" class="login-form">
+            <h1>🎬 SoloVideoClub</h1>
+            
+            <div class="form-group">
+                <label for="serverType">Tipo de Servidor</label>
+                <select id="serverType" class="form-control" required>
+                    <option value="emby">Emby Server</option>
+                    <option value="jellyfin">Jellyfin Server</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="serverUrl">URL del Servidor</label>
+                <input type="url" id="serverUrl" class="form-control" placeholder="https://tu-servidor.com" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="port">Puerto</label>
+                <input type="number" id="port" class="form-control" placeholder="8096" min="1" max="65535" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="username">Usuario</label>
+                <input type="text" id="username" class="form-control" placeholder="Tu usuario" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Contraseña</label>
+                <input type="password" id="password" class="form-control" placeholder="Tu contraseña" required>
+            </div>
+            
+            <button type="submit" id="loginBtn" class="btn">
+                <span id="loginBtnText">Iniciar Sesión</span>
+            </button>
+            
+            <div id="loginMessage" class="message hidden"></div>
+        </form>
+    </div>
+
+    <!-- App Container -->
+    <div id="appContainer" class="app-container">
+        <div class="container">
+            <div class="header">
+                <div class="user-info">
+                    <h2>🎬 SoloVideoClub</h2>
+                    <span id="userInfo"></span>
+                </div>
+                <button id="logoutBtn" class="logout-btn">Cerrar Sesión</button>
+            </div>
+
+            <div id="connectionStatus" class="connection-status hidden"></div>
+
+            <!-- Search Section -->
+            <div class="search-container">
+                <input type="text" id="searchInput" class="search-input" placeholder="🔍 Buscar en todas las bibliotecas...">
+            </div>
+
+            <!-- Back Button -->
+            <button id="backBtn" class="back-btn hidden">← Volver a Bibliotecas</button>
+
+            <!-- Libraries Section -->
+            <div id="librariesSection" class="libraries-section">
+                <h2 class="section-title">📚 Tus Bibliotecas</h2>
+                <p style="color: rgba(255, 255, 255, 0.7); margin-bottom: 20px;">Explora tu colección de medios</p>
+                <div id="librariesGrid" class="libraries-grid">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        Cargando bibliotecas...
+                    </div>
+                </div>
+            </div>
+
+            <!-- Library Content Section -->
+            <div id="libraryContentSection" class="libraries-section hidden">
+                <h2 id="libraryTitle" class="section-title">📂 Contenido</h2>
+                <div id="mediaGrid" class="media-grid"></div>
+            </div>
+
+            <!-- Search Results Section -->
+            <div id="searchResultsSection" class="libraries-section hidden">
+                <h2 class="section-title">🔍 Resultados de Búsqueda</h2>
+                <div id="searchResults" class="media-grid"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentUser = null;
+        let authToken = null;
+        let currentServer = null;
+        let libraries = [];
+
+        // DOM Elements
+        const loginContainer = document.getElementById('loginContainer');
+        const appContainer = document.getElementById('appContainer');
+        const loginForm = document.getElementById('loginForm');
+        const loginBtn = document.getElementById('loginBtn');
+        const loginBtnText = document.getElementById('loginBtnText');
+        const loginMessage = document.getElementById('loginMessage');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const userInfo = document.getElementById('userInfo');
+        const connectionStatus = document.getElementById('connectionStatus');
+        const searchInput = document.getElementById('searchInput');
+        const backBtn = document.getElementById('backBtn');
+        const librariesSection = document.getElementById('librariesSection');
+        const libraryContentSection = document.getElementById('libraryContentSection');
+        const searchResultsSection = document.getElementById('searchResultsSection');
+        const librariesGrid = document.getElementById('librariesGrid');
+        const mediaGrid = document.getElementById('mediaGrid');
+        const searchResults = document.getElementById('searchResults');
+        const libraryTitle = document.getElementById('libraryTitle');
+
+        // API Base URL - Update this to point to your Replit backend
+        const API_BASE = 'https://25a3319c-3c1b-43be-a3f2-12b83b274d5a-00-3ibdz0uwqgo2.picard.replit.dev';
+
+        // Utility Functions
+        function showMessage(text, type = 'info') {
+            loginMessage.textContent = text;
+            loginMessage.className = `message ${type}`;
+            loginMessage.classList.remove('hidden');
+        }
+
+        function hideMessage() {
+            loginMessage.classList.add('hidden');
+        }
+
+        function setLoading(isLoading) {
+            loginBtn.disabled = isLoading;
+            loginBtnText.textContent = isLoading ? 'Conectando...' : 'Iniciar Sesión';
+        }
+
+        async function apiRequest(method, endpoint, data = null) {
+            const url = `${API_BASE}${endpoint}`;
+            const options = {
+                method,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include', // Important for CORS cookies
+            };
+
+            if (data) {
+                options.body = JSON.stringify(data);
+            }
+
+            console.log(`API Request: ${method} ${url}`, data);
+            
+            try {
+                const response = await fetch(url, options);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                }
+                
+                const result = await response.json();
+                console.log(`API Response:`, result);
+                return result;
+            } catch (error) {
+                console.error(`API Error: ${method} ${url}`, error);
+                throw error;
+            }
+        }
+
+        // Authentication Functions
+        async function login(credentials) {
+            try {
+                console.log('🔐 Attempting login with:', {
+                    serverType: credentials.serverType,
+                    serverUrl: credentials.serverUrl,
+                    port: credentials.port,
+                    username: credentials.username
+                });
+
+                // First, try to connect to server
+                const connectResult = await apiRequest('POST', '/api/servers/connect', {
+                    serverType: credentials.serverType,
+                    url: credentials.serverUrl,
+                    port: credentials.port,
+                    username: credentials.username,
+                    password: credentials.password,
+                    name: `${credentials.username}'s ${credentials.serverType} Server`
+                });
+
+                console.log('✅ Server connection result:', connectResult);
+
+                // Then authenticate
+                const authResult = await apiRequest('POST', '/api/login', credentials);
+                
+                console.log('✅ Authentication result:', authResult);
+
+                if (authResult.success) {
+                    currentUser = authResult.user;
+                    authToken = authResult.token;
+                    currentServer = {
+                        type: credentials.serverType,
+                        url: credentials.serverUrl,
+                        port: credentials.port,
+                        name: authResult.serverName || `${credentials.username}'s Server`
+                    };
+
+                    return { success: true };
+                } else {
+                    return { success: false, error: authResult.error || 'Authentication failed' };
+                }
+            } catch (error) {
+                console.error('❌ Login error:', error);
+                return { success: false, error: error.message };
+            }
+        }
+
+        async function loadLibraries() {
+            try {
+                console.log('📚 Loading libraries...');
+                const result = await apiRequest('GET', '/api/libraries');
+                libraries = result || [];
+                console.log(`✅ Loaded ${libraries.length} libraries:`, libraries);
+                return libraries;
+            } catch (error) {
+                console.error('❌ Error loading libraries:', error);
+                return [];
+            }
+        }
+
+        async function loadLibraryContent(libraryId) {
+            try {
+                console.log(`📂 Loading content for library: ${libraryId}`);
+                const result = await apiRequest('GET', `/api/libraries/${libraryId}/items?limit=10000`);
+                console.log(`✅ Loaded ${result.length} items from library`);
+                return result || [];
+            } catch (error) {
+                console.error('❌ Error loading library content:', error);
+                return [];
+            }
+        }
+
+        async function searchMedia(query) {
+            try {
+                console.log(`🔍 Searching for: ${query}`);
+                const result = await apiRequest('GET', `/api/search?q=${encodeURIComponent(query)}&limit=1000`);
+                console.log(`✅ Found ${result.length} search results`);
+                return result || [];
+            } catch (error) {
+                console.error('❌ Error searching:', error);
+                return [];
+            }
+        }
+
+        // UI Functions
+        function showApp() {
+            loginContainer.style.display = 'none';
+            appContainer.style.display = 'block';
+            
+            userInfo.textContent = `👤 ${currentUser.name} | 🖥️ ${currentServer.name} | 📚 ${libraries.length} bibliotecas`;
+            connectionStatus.textContent = `✅ Conectado a ${currentServer.type.toUpperCase()} server en ${currentServer.url}:${currentServer.port}`;
+            connectionStatus.classList.remove('hidden');
+            
+            renderLibraries();
+        }
+
+        function showLogin() {
+            appContainer.style.display = 'none';
+            loginContainer.style.display = 'flex';
+            
+            // Reset form
+            loginForm.reset();
+            hideMessage();
+            
+            // Reset app state
+            currentUser = null;
+            authToken = null;
+            currentServer = null;
+            libraries = [];
+        }
+
+        function renderLibraries() {
+            if (libraries.length === 0) {
+                librariesGrid.innerHTML = `
+                    <div class="library-card">
+                        <h3>📂 Sin bibliotecas</h3>
+                        <p>No se encontraron bibliotecas en el servidor</p>
+                    </div>
+                `;
+                return;
+            }
+
+            librariesGrid.innerHTML = libraries.map(library => `
+                <div class="library-card" onclick="openLibrary('${library.embyId}', '${library.name}')">
+                    <h3>${getLibraryIcon(library.name)} ${library.name}</h3>
+                    <p>${library.type || 'Biblioteca multimedia'}</p>
+                </div>
+            `).join('');
+        }
+
+        function getLibraryIcon(name) {
+            const nameLower = name.toLowerCase();
+            if (nameLower.includes('movie') || nameLower.includes('película') || nameLower.includes('film')) return '🎬';
+            if (nameLower.includes('tv') || nameLower.includes('serie') || nameLower.includes('show')) return '📺';
+            if (nameLower.includes('music') || nameLower.includes('música')) return '🎵';
+            if (nameLower.includes('book') || nameLower.includes('libro')) return '📚';
+            if (nameLower.includes('photo') || nameLower.includes('foto')) return '📸';
+            return '📂';
+        }
+
+        async function openLibrary(libraryId, libraryName) {
+            console.log(`📂 Opening library: ${libraryName} (${libraryId})`);
+            
+            // Show loading
+            mediaGrid.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Cargando contenido de ${libraryName}...
+                </div>
+            `;
+            
+            // Hide libraries, show content
+            librariesSection.classList.add('hidden');
+            libraryContentSection.classList.remove('hidden');
+            backBtn.classList.remove('hidden');
+            searchResultsSection.classList.add('hidden');
+            
+            libraryTitle.textContent = `${getLibraryIcon(libraryName)} ${libraryName}`;
+            
+            // Load content
+            const items = await loadLibraryContent(libraryId);
+            renderMediaItems(items, mediaGrid);
+        }
+
+        function renderMediaItems(items, container) {
+            if (items.length === 0) {
+                container.innerHTML = `
+                    <div class="media-item">
+                        <h4>📂 Sin contenido</h4>
+                        <p>Esta biblioteca está vacía</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = items.map(item => `
+                <div class="media-item" onclick="playMedia('${item.embyId}', '${item.name}', '${item.type}')">
+                    <h4>🎬 ${item.name}</h4>
+                    <p>${item.type}${item.year ? ` <span class="media-year">(${item.year})</span>` : ''}</p>
+                    ${item.overview ? `<p style="font-size: 0.8rem; margin-top: 8px; opacity: 0.8;">${item.overview.substring(0, 100)}${item.overview.length > 100 ? '...' : ''}</p>` : ''}
+                </div>
+            `).join('');
+        }
+
+        function playMedia(mediaId, mediaName, mediaType) {
+            alert(`🎬 Reproducir: ${mediaName}\nTipo: ${mediaType}\nID: ${mediaId}\n\n(La reproducción se integrará próximamente)`);
+        }
+
+        function backToLibraries() {
+            libraryContentSection.classList.add('hidden');
+            searchResultsSection.classList.add('hidden');
+            librariesSection.classList.remove('hidden');
+            backBtn.classList.add('hidden');
+            searchInput.value = '';
+        }
+
+        // Event Listeners
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const credentials = {
+                serverType: document.getElementById('serverType').value,
+                serverUrl: document.getElementById('serverUrl').value,
+                port: parseInt(document.getElementById('port').value),
+                username: document.getElementById('username').value,
+                password: document.getElementById('password').value
+            };
+
+            setLoading(true);
+            hideMessage();
+
+            try {
+                const result = await login(credentials);
+                
+                if (result.success) {
+                    showMessage('✅ Conectado exitosamente', 'success');
+                    
+                    // Load libraries
+                    await loadLibraries();
+                    
+                    setTimeout(() => {
+                        showApp();
+                    }, 1000);
+                } else {
+                    showMessage(`❌ Error: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                showMessage(`❌ Error de conexión: ${error.message}`, 'error');
+            } finally {
+                setLoading(false);
+            }
+        });
+
+        logoutBtn.addEventListener('click', async () => {
+            try {
+                await apiRequest('POST', '/api/logout');
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
+            showLogin();
+        });
+
+        backBtn.addEventListener('click', backToLibraries);
+
+        // Search functionality
+        let searchTimeout;
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.trim();
+            
+            clearTimeout(searchTimeout);
+            
+            if (query.length < 3) {
+                searchResultsSection.classList.add('hidden');
+                if (!libraryContentSection.classList.contains('hidden')) {
+                    return; // Stay in library view
+                }
+                librariesSection.classList.remove('hidden');
+                backBtn.classList.add('hidden');
+                return;
+            }
+
+            searchTimeout = setTimeout(async () => {
+                console.log(`🔍 Searching for: ${query}`);
+                
+                // Show loading
+                searchResults.innerHTML = `
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        Buscando "${query}"...
+                    </div>
+                `;
+                
+                // Hide other sections
+                librariesSection.classList.add('hidden');
+                libraryContentSection.classList.add('hidden');
+                searchResultsSection.classList.remove('hidden');
+                backBtn.classList.remove('hidden');
+                
+                // Search
+                const results = await searchMedia(query);
+                renderMediaItems(results, searchResults);
+            }, 500);
+        });
+
+        // Server type change handler
+        document.getElementById('serverType').addEventListener('change', (e) => {
+            const port = document.getElementById('port');
+            if (e.target.value === 'jellyfin') {
+                port.value = '8096';
+            } else if (e.target.value === 'emby') {
+                port.value = '8096';
+            }
+        });
+
+        // Initialize app
+        console.log('🚀 SoloVideoClub initialized');
+        console.log('🔗 API Base URL:', API_BASE);
+
+        // Set default values for known server
+        document.getElementById('serverType').value = 'emby';
+        document.getElementById('serverUrl').value = 'https://restwo.stream-cloud.es';
+        document.getElementById('port').value = '443';
+        document.getElementById('username').value = 'Manoli1980';
+    </script>
+</body>
+</html>

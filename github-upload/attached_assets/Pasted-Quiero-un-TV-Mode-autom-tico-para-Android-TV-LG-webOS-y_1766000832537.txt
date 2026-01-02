@@ -1,0 +1,107 @@
+Quiero un TV Mode automático para Android TV, LG webOS y Samsung Tizen.
+
+Objetivo:
+
+En TV no debe verse el cursor/flecha (o al menos ocultarlo)
+
+Control solo con mando: ↑ ↓ ← →, OK/Enter, Back/Escape
+
+Tareas:
+
+Detectar TV por navigator.userAgent (Android TV, webOS, Tizen, SmartTV).
+
+Si es TV, añadir clase tv-mode a <html> o <body>.
+
+En tv-mode: aplicar cursor:none !important; y desactivar hover.
+
+Implementar navegación por foco:
+
+Todos los elementos clicables deben tener tabindex="0" y clase .focusable
+
+Mostrar borde/escala en :focus-visible
+
+Manejar teclas: ArrowUp/Down/Left/Right, Enter, Escape/Backspace.
+
+Asegurar que al cargar la página se hace focus en el primer elemento del catálogo.
+
+Nota: algunas TVs fuerzan cursor, pero quiero que visualmente NO se vea y la UX sea de TV.
+
+Código mínimo que debe añadir (si te lo piden, pégalo)
+1) CSS (cursor off + foco visible)
+/* TV MODE */
+html.tv-mode, html.tv-mode * {
+  cursor: none !important;
+}
+
+html.tv-mode .focusable:focus-visible {
+  outline: 3px solid currentColor;
+  outline-offset: 4px;
+  transform: scale(1.03);
+}
+
+html.tv-mode a:hover,
+html.tv-mode button:hover {
+  /* en TV no queremos “hover de ratón” */
+  filter: none;
+}
+
+2) JS (detectar TV + mando)
+(function enableTvMode() {
+  const ua = navigator.userAgent || "";
+  const isTV =
+    /Android TV|webOS|Tizen|SMART-TV|SmartTV|HbbTV|NetCast|Viera|BRAVIA/i.test(ua);
+
+  if (!isTV) return;
+
+  document.documentElement.classList.add("tv-mode");
+
+  const getFocusable = () =>
+    Array.from(document.querySelectorAll(".focusable,[data-focusable='true']"))
+      .filter(el => !el.hasAttribute("disabled") && el.offsetParent !== null)
+      .map(el => {
+        if (!el.hasAttribute("tabindex")) el.setAttribute("tabindex", "0");
+        el.classList.add("focusable");
+        return el;
+      });
+
+  const focusFirst = () => {
+    const items = getFocusable();
+    if (items.length) items[0].focus();
+  };
+
+  window.addEventListener("load", () => setTimeout(focusFirst, 200));
+
+  const moveFocus = (dir) => {
+    const items = getFocusable();
+    if (!items.length) return;
+
+    const active = document.activeElement;
+    let idx = items.indexOf(active);
+    if (idx === -1) idx = 0;
+
+    // simple: izquierda/derecha = -1/+1, arriba/abajo = -1/+1 también (mejorable por grid)
+    const delta = (dir === "left" || dir === "up") ? -1 : 1;
+    const next = items[(idx + delta + items.length) % items.length];
+    next.focus();
+    next.scrollIntoView({ block: "nearest", inline: "nearest" });
+  };
+
+  document.addEventListener("keydown", (e) => {
+    switch (e.key) {
+      case "ArrowLeft": e.preventDefault(); moveFocus("left"); break;
+      case "ArrowRight": e.preventDefault(); moveFocus("right"); break;
+      case "ArrowUp": e.preventDefault(); moveFocus("up"); break;
+      case "ArrowDown": e.preventDefault(); moveFocus("down"); break;
+      case "Enter":
+      case "OK": // algunas TVs
+        e.preventDefault();
+        if (document.activeElement) document.activeElement.click();
+        break;
+      case "Escape":
+      case "Backspace": // back en algunas TVs
+        // aquí puedes hacer “volver” en tu router
+        // window.history.back();
+        break;
+    }
+  });
+})();

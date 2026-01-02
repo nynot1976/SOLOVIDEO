@@ -1,0 +1,102 @@
+{
+  "name": "solovideo-club-desktop",
+  "version": "1.0.0",
+  "description": "SoloVideoClub - Aplicación de escritorio para Windows",
+  "main": "electron-main.js",
+  "homepage": "./",
+  "author": "SoloVideoClub Team",
+  "license": "MIT",
+  "scripts": {
+    "electron": "electron .",
+    "electron-dev": "NODE_ENV=development electron .",
+    "build": "npm run build:server && npm run build:client",
+    "build:server": "esbuild server/index.ts --bundle --platform=node --outfile=dist/server.js --external:pg-native --external:sqlite3",
+    "build:client": "vite build",
+    "dist": "npm run build && electron-builder",
+    "dist:win": "npm run build && electron-builder --win",
+    "pack": "electron-builder --dir",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^0.9.0",
+    "axios": "^1.6.0",
+    "drizzle-orm": "^0.29.0",
+    "express": "^4.18.0",
+    "ws": "^8.14.0",
+    "zod": "^3.22.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.0",
+    "@types/node": "^20.0.0",
+    "@types/ws": "^8.5.0",
+    "@vitejs/plugin-react": "^4.0.0",
+    "drizzle-kit": "^0.20.0",
+    "esbuild": "^0.19.0",
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1",
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.0",
+    "vite": "^5.0.0"
+  },
+  "build": {
+    "appId": "com.solovideo.club",
+    "productName": "SoloVideoClub",
+    "directories": {
+      "output": "release-electron"
+    },
+    "files": [
+      "dist/**/*",
+      "electron-main.js",
+      "package.json",
+      "README.md"
+    ],
+    "extraFiles": [
+      {
+        "from": "dist",
+        "to": "app/dist",
+        "filter": ["**/*"]
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64", "ia32"]
+        },
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "assets/icon.ico",
+      "artifactName": "${productName}-${version}-${arch}-Setup.${ext}",
+      "publisherName": "SoloVideoClub",
+      "verifyUpdateCodeSignature": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "deleteAppDataOnUninstall": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "SoloVideoClub",
+      "include": "installer.nsh"
+    },
+    "portable": {
+      "artifactName": "${productName}-${version}-Portable.${ext}"
+    },
+    "compression": "normal",
+    "fileAssociations": [
+      {
+        "ext": "m3u8",
+        "name": "Playlist de Video",
+        "description": "Lista de reproducción de video",
+        "role": "Viewer"
+      }
+    ]
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

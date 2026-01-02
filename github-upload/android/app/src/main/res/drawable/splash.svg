@@ -1,0 +1,36 @@
+
+<svg width="1080" height="1920" viewBox="0 0 1080 1920" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="gradientBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#764ba2;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#667eea;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="gradientText" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f0f0f0;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Fondo completo -->
+  <rect width="1080" height="1920" fill="url(#gradientBg)"/>
+  
+  <!-- Logo central -->
+  <circle cx="540" cy="800" r="180" fill="#ffffff" opacity="0.1"/>
+  <circle cx="540" cy="800" r="140" fill="#ffffff" opacity="0.2"/>
+  
+  <!-- Símbolo de play -->
+  <polygon points="480,720 480,880 620,800" fill="#ffffff" opacity="0.9"/>
+  
+  <!-- Título -->
+  <text x="540" y="1100" font-family="Arial, sans-serif" font-size="72" font-weight="bold" text-anchor="middle" fill="url(#gradientText)">SoloVideoClub</text>
+  
+  <!-- Subtítulo -->
+  <text x="540" y="1180" font-family="Arial, sans-serif" font-size="36" text-anchor="middle" fill="#ffffff" opacity="0.8">Streaming Jellyfin y Emby</text>
+  
+  <!-- Elementos decorativos -->
+  <circle cx="150" cy="300" r="20" fill="#ffffff" opacity="0.3"/>
+  <circle cx="930" cy="500" r="15" fill="#ffffff" opacity="0.4"/>
+  <circle cx="100" cy="1400" r="25" fill="#ffffff" opacity="0.2"/>
+  <circle cx="980" cy="1600" r="18" fill="#ffffff" opacity="0.3"/>
+</svg>
