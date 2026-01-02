@@ -18,7 +18,7 @@ jobs:
       distribution: 'temurin'
       java-version: '17'
 
-  - name: Locate gradlew
+    - name: Locate gradlew
     run: |
       echo "===== LIST ROOT ====="
       ls -la
@@ -28,6 +28,7 @@ jobs:
       find . -maxdepth 6 -name "settings.gradle" -print
       echo "===== FIND build.gradle ====="
       find . -maxdepth 6 -name "build.gradle" -print
+
 
   - name: Grant execute permission for gradlew
     run: chmod +x build-apk/android/gradlew
