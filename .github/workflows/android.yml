@@ -2,39 +2,32 @@ name: Build Android APK
 
 on:
   push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+    branches: [ "main" ]
+  workflow_dispatch:
 
 jobs:
-  build-apk:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
         with:
-          node-version: '20'
+          distribution: 'temurin'
+          java-version: '17'
 
-      - name: Install dependencies
-        run: npm install
+      - name: Grant execute permission for gradlew
+        run: chmod +x android/gradlew
 
-      - name: Build web app
-        run: cd client && npm run build
-
-      - name: Generate APK
-        run: |
-          cd ..
-          npx cap init
-          npx cap add android
-          npx cap copy
-          npx cap sync
-          node generar-apk-android.js
+      - name: Build Debug APK
+        working-directory: android
+        run: ./gradlew assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: SoloVideoClub.apk
-          path: SoloVideoClub.apk
+          name: SoloVideoClub-debug-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
