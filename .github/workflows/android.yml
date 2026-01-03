@@ -9,29 +9,30 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-     - name: Checkout repo
-    uses: actions/checkout@v4
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
-  - name: Set up JDK 17
-    uses: actions/setup-java@v4
-    with:
-      distribution: 'temurin'
-      java-version: '17'
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
 
-    - name: Locate gradlew
-    run: |
-      echo "===== LIST ROOT ====="
-      ls -la
-      echo "===== FIND gradlew ====="
-      find . -maxdepth 6 -name "gradlew" -print
-      echo "===== FIND settings.gradle ====="
-      find . -maxdepth 6 -name "settings.gradle" -print
-      echo "===== FIND build.gradle ====="
-      find . -maxdepth 6 -name "build.gradle" -print
+      - name: Locate gradlew
+        run: |
+          echo "===== LIST ROOT ====="
+          ls -la
+          echo "===== FIND gradlew ====="
+          find . -maxdepth 6 -name "gradlew" -print
+          echo "===== FIND settings.gradle ====="
+          find . -maxdepth 6 -name "settings.gradle" -print
+          echo "===== FIND build.gradle ====="
+          find . -maxdepth 6 -name "build.gradle" -print
 
+      - name: Finish debug
+        run: echo "Locate step finished"
 
-  - name: Grant execute permission for gradlew
-    run: chmod +x build-apk/android/gradlew
 
  - name: Build Debug APK
    run: cd build-apk/android && ./gradlew assembleDebug
