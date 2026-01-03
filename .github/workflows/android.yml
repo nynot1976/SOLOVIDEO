@@ -19,28 +19,48 @@ jobs:
           distribution: "temurin"
           java-version: "17"
 
-      - name: Locate gradlew
+      - name: Detect gradlew
+        shell: bash
         run: |
-          echo "===== LIST ROOT ====="
-          ls -la
           echo "===== FIND gradlew ====="
-          find . -maxdepth 6 -name "gradlew" -print
-          echo "===== FIND settings.gradle ====="
-          find . -maxdepth 6 -name "settings.gradle" -print
-          echo "===== FIND build.gradle ====="
-          find . -maxdepth 6 -name "build.gradle" -print
+          GRADLEW_PATH="$(find . -maxdepth 6 -name gradlew -type f | head -n 1)"
+          echo "Found: $GRADLEW_PATH"
+          if [ -z "$GRADLEW_PATH" ]; then
+            echo "ERROR: gradlew not found"
+            exit 1
+          fi
+          GRADLEW_DIR="$(dirname "$GRADLEW_PATH")"
+          echo "GRADLEW_PATH=$GRADLEW_PATH" >> $GITHUB_ENV
+          echo "GRADLEW_DIR=$GRADLEW_DIR" >> $GITHUB_ENV
 
-      - name: Finish debug
-        run: echo "Locate step finished"
+      - name: Grant execute permission
+        shell: bash
+        run: |
+          chmod +x "$GRADLEW_PATH"
 
+      - name: Build Debug APK
+        shell: bash
+        run: |
+          cd "$GRADLEW_DIR"
+          ./gradlew assembleDebug
 
- - name: Build Debug APK
-   run: cd build-apk/android && ./gradlew assembleDebug
+      - name: Locate APK
+        shell: bash
+        run: |
+          echo "===== FIND APK ====="
+          APK_PATH="$(find . -maxdepth 10 -path "*build/outputs/apk/debug/*.apk" | head -n 1)"
+          echo "Found APK: $APK_PATH"
+          if [ -z "$APK_PATH" ]; then
+            echo "ERROR: debug APK not found"
+            exit 1
+          fi
+          echo "APK_PATH=$APK_PATH" >> $GITHUB_ENV
 
- - name: Upload APK
-   uses: actions/upload-artifact@v4
-     with:
-       name: SoloVideoClub-debug-apk
-       path: build-apk/android/app/build/outputs/apk/debug/app-debug.apk
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: SoloVideoClub-debug-apk
+          path: ${{ env.APK_PATH }}
+
 
 
